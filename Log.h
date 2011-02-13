@@ -1,13 +1,6 @@
-/*
- * NeoSmart Logging Library
- * Author: Mahmoud Al-Qudsi <mqudsi@neosmart.net>
- * Copyright (C) 2011 by NeoSmart Technologies
- * This library is released under the terms of the MIT License
-*/
-
 #pragma once
 
-#include <atlstr.h>
+#include <Windows.h>
 
 namespace neosmart
 {
@@ -47,7 +40,7 @@ namespace neosmart
 
 	class ScopeLog
 	{
-		CString _name;
+		LPCTSTR _name;
 
 	public:
 		ScopeLog(LPCTSTR name);

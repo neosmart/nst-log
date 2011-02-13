@@ -1,13 +1,7 @@
-/*
- * NeoSmart Logging Library
- * Author: Mahmoud Al-Qudsi <mqudsi@neosmart.net>
- * Copyright (C) 2011 by NeoSmart Technologies
- * This library is released under the terms of the MIT License
-*/
+#pragma once
 
 #include "stdafx.h"
 #include "Log.h"
-#include <atlstr.h>
 
 using namespace neosmart;
 
@@ -29,19 +23,25 @@ namespace neosmart
 		if(level < _logLevel)
 			return;
 
-		CString newMessage;
-		CString indentText;
+		TCHAR *mask;
 
 		//Indentation only works if ScopeLog is printing 
+		size_t size = 4 + 2 + _tcsclen(message) + 2 + 1;
 		if(_logLevel <= neosmart::Debug)
 		{
-			for(int i = 0; i < IndentLevel; ++i)
-				indentText += _T(" ");
+			size += IndentLevel;
+			mask = new TCHAR[size];
+			_stprintf_s(mask, size, _T("%*s: %s\r\n"), IndentLevel + 4, logLevelNames[level], message);
+		}
+		else
+		{
+			mask = new TCHAR[size];
+			_stprintf_s(mask, size, _T("%s: %s\r\n"), logLevelNames[level], message);
 		}
 
-		newMessage.Format(_T("%s%s: %s\r\n"), indentText, logLevelNames[level], message);
+		vwprintf_s(mask, params);
 
-		vwprintf_s(newMessage, params);
+		delete mask;
 	}
 
 	void Logger::Log(LogLevel level, LPCTSTR message, ...)
@@ -97,8 +97,9 @@ namespace neosmart
 		_logLevel = logLevel;
 	}
 
-	ScopeLog::ScopeLog(LPCTSTR name) : _name(name)
+	ScopeLog::ScopeLog(LPCTSTR name)
 	{
+		_name = _tcsdup(name);
 		++IndentLevel;
 		logger.Log(Debug, _T("Entering %s"), _name);
 	}
@@ -106,6 +107,7 @@ namespace neosmart
 	ScopeLog::~ScopeLog()
 	{
 		logger.Log(Debug, _T("Leaving %s"), _name);
+		delete _name;
 		--IndentLevel;
 	}
 }
