@@ -34,7 +34,7 @@ namespace neosmart
 
 		//Indentation only works if ScopeLog is printing 
 		size_t size = 4 + 2 + _tcsclen(message) + 2 + 1;
-		if(_logLevel <= neosmart::Debug)
+		if(IndentLevel >= 0 && _logLevel <= neosmart::Debug)
 		{
 			size += IndentLevel;
 			mask = new TCHAR[size];
@@ -48,7 +48,7 @@ namespace neosmart
 
 		vwprintf_s(mask, params);
 
-		delete mask;
+		delete [] mask;
 	}
 
 	void Logger::Log(LogLevel level, LPCTSTR message, ...)
