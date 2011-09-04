@@ -36,7 +36,7 @@ namespace neosmart
 		size_t size = 4 + 2 + _tcsclen(message) + 2 + 1;
 		if(IndentLevel >= 0 && _logLevel <= neosmart::Debug)
 		{
-			size += IndentLevel;
+			size += (size_t) IndentLevel;
 			mask = new TCHAR[size];
 			_stprintf_s(mask, size, _T("%*s: %s\r\n"), IndentLevel + 4, logLevelNames[level], message);
 		}
