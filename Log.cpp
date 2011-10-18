@@ -107,8 +107,6 @@ namespace neosmart
 
 	void ScopeLog::Initialize(LPCTSTR name)
 	{
-		//We don't need to duplicate 'name' because it not possible for its 
-		//scope to expire (seeing as this is a *scope*log!)
 		_name = name;
 		++IndentLevel;
 		logger.Log(Debug, _T("Entering %s"), _name);
@@ -116,17 +114,23 @@ namespace neosmart
 
 	ScopeLog::ScopeLog(LPCTSTR name)
 	{
+		_allocated = false;
 		Initialize(name);
 	}
 
 	ScopeLog::ScopeLog(LPCSTR name)
 	{
-		Initialize(CString(name));
+		_allocated = true;
+		LPCTSTR newName = _tcsdup(CString(name));
+		Initialize(newName);
 	}
 
 	ScopeLog::~ScopeLog()
 	{
 		logger.Log(Debug, _T("Leaving %s"), _name);
 		--IndentLevel;
+
+		if(_allocated)
+			free((void*) _name);
 	}
 }
