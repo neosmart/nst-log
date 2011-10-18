@@ -43,15 +43,18 @@ namespace neosmart
 		void Error(LPCTSTR message, ...);
 	};
 
-	extern Logger logger;
-
 	class ScopeLog
 	{
 		LPCTSTR _name;
 
+		void Initialize(LPCTSTR name);
+
 	public:
 		ScopeLog(LPCTSTR name);
+		ScopeLog(LPCSTR name);
 
 		~ScopeLog();
 	};
+
+	extern Logger logger;
 }

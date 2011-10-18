@@ -9,6 +9,7 @@
 
 #include "stdafx.h"
 #include "Log.h"
+#include <atlstr.h>
 
 using namespace neosmart;
 
@@ -104,13 +105,23 @@ namespace neosmart
 		_logLevel = logLevel;
 	}
 
-	ScopeLog::ScopeLog(LPCTSTR name)
+	void ScopeLog::Initialize(LPCTSTR name)
 	{
 		//We don't need to duplicate 'name' because it not possible for its 
 		//scope to expire (seeing as this is a *scope*log!)
 		_name = name;
 		++IndentLevel;
 		logger.Log(Debug, _T("Entering %s"), _name);
+	}
+
+	ScopeLog::ScopeLog(LPCTSTR name)
+	{
+		Initialize(name);
+	}
+
+	ScopeLog::ScopeLog(LPCSTR name)
+	{
+		Initialize(CString(name));
 	}
 
 	ScopeLog::~ScopeLog()
