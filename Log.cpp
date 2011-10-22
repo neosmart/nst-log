@@ -7,8 +7,7 @@
 
 #pragma once
 
-#ifdef _WIN32
-#include "stdafx.h"
+#ifdef WIN32
 #include <atlstr.h>
 #else
 #include <stdio.h>
