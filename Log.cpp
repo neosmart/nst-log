@@ -9,8 +9,10 @@
 
 #ifdef _WIN32
 #include "stdafx.h"
+#include <atlstr.h>
 #else
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #define _tcsclen strlen
 #define _stprintf_s snprintf
@@ -45,7 +47,7 @@ namespace neosmart
 		size_t size = 4 + 2 + _tcsclen(message) + 2 + 1;
 		if(IndentLevel >= 0 && _logLevel <= neosmart::Debug)
 		{
-			size += IndentLevel;
+			size += (size_t) IndentLevel;
 			mask = new TCHAR[size];
 			_stprintf_s(mask, size, _T("%*s: %s\r\n"), IndentLevel + 4, logLevelNames[level], message);
 		}
@@ -113,18 +115,34 @@ namespace neosmart
 		_logLevel = logLevel;
 	}
 
-	ScopeLog::ScopeLog(LPCTSTR name)
+	void ScopeLog::Initialize(LPCTSTR name)
 	{
-		//We don't need to duplicate 'name' because it not possible for its 
-		//scope to expire (seeing as this is a *scope*log!)
 		_name = name;
 		++IndentLevel;
 		logger.Log(Debug, _T("Entering %s"), _name);
 	}
 
+	ScopeLog::ScopeLog(LPCTSTR name)
+	{
+		_allocated = false;
+		Initialize(name);
+	}
+
+#ifdef _WIN32
+	ScopeLog::ScopeLog(LPCSTR name)
+	{
+		_allocated = true;
+		LPCTSTR newName = _tcsdup(CString(name));
+		Initialize(newName);
+	}
+#endif
+
 	ScopeLog::~ScopeLog()
 	{
 		logger.Log(Debug, _T("Leaving %s"), _name);
 		--IndentLevel;
+
+		if(_allocated)
+			free((void*) _name);
 	}
 }

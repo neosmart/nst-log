@@ -51,15 +51,21 @@ namespace neosmart
 		void Error(LPCTSTR message, ...);
 	};
 
-	extern Logger logger;
-
 	class ScopeLog
 	{
 		LPCTSTR _name;
+		bool _allocated;
+
+		void Initialize(LPCTSTR name);
 
 	public:
 		ScopeLog(LPCTSTR name);
+#ifdef _WIN32
+		ScopeLog(LPCSTR name);
+#endif
 
 		~ScopeLog();
 	};
+
+	extern Logger logger;
 }
