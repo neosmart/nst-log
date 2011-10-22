@@ -7,11 +7,19 @@
 
 #pragma once
 
+#ifdef _WIN32
 #include <Windows.h>
+#define __thread __declspec(thread)
+#else
+typedef char TCHAR;
+#include <stdarg.h>
+#define _T(x) (x)
+typedef const char *LPCTSTR;
+#endif
 
 namespace neosmart
 {
-	extern __declspec(thread) int IndentLevel;
+	extern __thread int IndentLevel;
 
 	enum LogLevel
 	{

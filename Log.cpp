@@ -7,18 +7,27 @@
 
 #pragma once
 
+#ifdef _WIN32
 #include "stdafx.h"
+#else
+#include <stdio.h>
+#include <string.h>
+#define _tcsclen strlen
+#define _stprintf_s snprintf
+#define vwprintf_s vprintf
+#endif
+
 #include "Log.h"
 
 using namespace neosmart;
 
 namespace neosmart
 {
-	__declspec(thread) int IndentLevel = -1;
+	__thread int IndentLevel = -1;
 
 	Logger logger = Logger();
 
-	TCHAR* logLevelNames[] = {_T("DEBG"), _T("INFO"), _T("WARN"), _T("ERRR")};
+	LPCTSTR logLevelNames[] = {_T("DEBG"), _T("INFO"), _T("WARN"), _T("ERRR")};
 
 	Logger::Logger(LogLevel logLevel)
 	{
