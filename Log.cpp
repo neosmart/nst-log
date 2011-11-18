@@ -21,6 +21,7 @@
 #include "Log.h"
 
 using namespace neosmart;
+using namespace std;
 
 namespace neosmart
 {
@@ -33,6 +34,12 @@ namespace neosmart
 	Logger::Logger(LogLevel logLevel)
 	{
 		_logLevel = logLevel;
+		_consoleOnly = true;
+#ifdef WIN32
+		AddLogDestination(std::wcout);
+#else
+		AddLogDestination(std::cout);
+#endif
 	}
 
 	void Logger::InnerLog(LogLevel level, LPCTSTR message, va_list params)
@@ -56,7 +63,23 @@ namespace neosmart
 			_stprintf_s(mask, size, _T("%s: %s\r\n"), logLevelNames[level], message);
 		}
 
-		vwprintf_s(mask, params);
+		if(_consoleOnly)
+		{
+			vwprintf_s(mask, params);
+		}
+		else
+		{
+			size_t length = _vsntprintf(NULL, 0, mask, params);
+			TCHAR *final = new TCHAR [length + 1];
+			_vsntprintf(final, length + 1, mask, params);
+
+			for(vector<ostream*>::iterator i = _outputs.begin(); i != _outputs.end(); ++i)
+			{
+				(**i) << final;
+			}
+
+			delete [] final;
+		}
 
 		delete [] mask;
 	}
@@ -112,6 +135,18 @@ namespace neosmart
 	void Logger::SetLogLevel(LogLevel logLevel)
 	{
 		_logLevel = logLevel;
+	}
+
+	void Logger::AddLogDestination(neosmart::ostream &destination)
+	{
+		_consoleOnly = false;
+		_outputs.push_back(&destination);
+	}
+
+	void Logger::ClearLogDestinations()
+	{
+		_consoleOnly = false;
+		_outputs.clear();
 	}
 
 	void ScopeLog::Initialize(LPCTSTR name)

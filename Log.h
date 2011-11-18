@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include <vector>
+#include <iostream>
+
 #ifdef _WIN32
 #include <Windows.h>
 #define __thread __declspec(thread)
@@ -19,6 +22,12 @@ typedef const char *LPCTSTR;
 
 namespace neosmart
 {
+#ifdef _WIN32
+	typedef std::wostream ostream;
+#else
+	typedef std::ostream ostream;
+#endif
+
 	extern __thread int IndentLevel;
 
 	enum LogLevel
@@ -33,6 +42,8 @@ namespace neosmart
 	{
 	private:
 		LogLevel _logLevel;
+		std::vector<ostream*> _outputs;
+		bool _consoleOnly;
 
 		void InnerLog(LogLevel level, LPCTSTR message, va_list params);
 
@@ -40,6 +51,8 @@ namespace neosmart
 		Logger(LogLevel logLevel = neosmart::Warn);
 
 		void SetLogLevel(LogLevel level);
+		void AddLogDestination(ostream &output);
+		void ClearLogDestinations();
 
 		void Log(LogLevel level, LPCTSTR message, ...);
 		void Log(LPCTSTR message, ...);
