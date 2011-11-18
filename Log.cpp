@@ -16,6 +16,7 @@
 #define _tcsclen strlen
 #define _stprintf_s snprintf
 #define vwprintf_s vprintf
+#define _vsntprintf vsnprintf 
 #endif
 
 #include "Log.h"
