@@ -33,12 +33,12 @@ namespace neosmart
 	Logger::Logger(LogLevel logLevel)
 	{
 		_logLevel = logLevel;
-		_consoleOnly = true;
 #ifdef WIN32
 		AddLogDestination(std::wcout);
 #else
 		AddLogDestination(std::cout);
 #endif
+		_consoleOnly = true;
 	}
 
 	void Logger::InnerLog(LogLevel level, LPCTSTR message, va_list params)
