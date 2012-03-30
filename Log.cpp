@@ -5,8 +5,6 @@
  * This code is released under the terms of the MIT License
 */
 
-#pragma once
-
 #ifdef WIN32
 #include <atlstr.h>
 #else
