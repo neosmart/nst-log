@@ -68,7 +68,15 @@ namespace neosmart
 		}
 		else
 		{
+#ifdef WIN32
 			size_t length = _vsntprintf(NULL, 0, mask, params);
+#else
+			//See http://stackoverflow.com/questions/8047362/is-gcc-mishandling-a-pointer-to-a-va-list-passed-to-a-function
+			va_list args_copy;
+			va_copy(args_copy, params);
+			size_t length = _vsntprintf(NULL, 0, mask, args_copy);
+			va_end(args_copy);
+#endif
 			TCHAR *final = new TCHAR [length + 1];
 			_vsntprintf(final, length + 1, mask, params);
 
