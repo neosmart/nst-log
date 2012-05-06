@@ -23,62 +23,62 @@ typedef const char *LPCTSTR;
 namespace neosmart
 {
 #ifdef _WIN32
-	typedef std::wostream ostream;
+    typedef std::wostream ostream;
 #else
-	typedef std::ostream ostream;
+    typedef std::ostream ostream;
 #endif
 
-	extern __thread int IndentLevel;
+    extern __thread int IndentLevel;
 
-	enum LogLevel
-	{
-		Debug,
-		Info,
-		Warn,
-		Error
-	};
+    enum LogLevel
+    {
+        Debug,
+        Info,
+        Warn,
+        Error
+    };
 
-	class Logger
-	{
-	private:
-		LogLevel _logLevel;
-		std::vector<ostream*> _outputs;
-		bool _consoleOnly;
+    class Logger
+    {
+    private:
+        LogLevel _logLevel;
+        std::vector<ostream*> _outputs;
+        bool _consoleOnly;
 
-		void InnerLog(LogLevel level, LPCTSTR message, va_list params);
+        void InnerLog(LogLevel level, LPCTSTR message, va_list params);
 
-	public:
-		Logger(LogLevel logLevel = neosmart::Warn);
+    public:
+        Logger(LogLevel logLevel = neosmart::Warn);
 
-		void SetLogLevel(LogLevel level);
-		void AddLogDestination(ostream &output);
-		void ClearLogDestinations();
+        void SetLogLevel(LogLevel level);
+        void AddLogDestination(ostream &output);
+        void ClearLogDestinations();
 
-		void Log(LogLevel level, LPCTSTR message, ...);
-		void Log(LPCTSTR message, ...);
+        void Log(LogLevel level, LPCTSTR message, ...);
+        void Log(LPCTSTR message, ...);
 
-		//Convenience Functions
-		void Debug(LPCTSTR message, ...);
-		void Info(LPCTSTR message, ...);
-		void Warn(LPCTSTR message, ...);
-		void Error(LPCTSTR message, ...);
-	};
+        //Convenience Functions
+        void Debug(LPCTSTR message, ...);
+        void Info(LPCTSTR message, ...);
+        void Warn(LPCTSTR message, ...);
+        void Error(LPCTSTR message, ...);
+    };
 
-	class ScopeLog
-	{
-		LPCTSTR _name;
-		bool _allocated;
+    class ScopeLog
+    {
+        LPCTSTR _name;
+        bool _allocated;
 
-		void Initialize(LPCTSTR name);
+        void Initialize(LPCTSTR name);
 
-	public:
-		ScopeLog(LPCTSTR name);
+    public:
+        ScopeLog(LPCTSTR name);
 #ifdef _WIN32
-		ScopeLog(LPCSTR name);
+        ScopeLog(LPCSTR name);
 #endif
 
-		~ScopeLog();
-	};
+        ~ScopeLog();
+    };
 
-	extern Logger logger;
+    extern Logger logger;
 }
