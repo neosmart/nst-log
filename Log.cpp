@@ -145,6 +145,11 @@ namespace neosmart
 		_logLevel = logLevel;
 	}
 
+	void Logger::AddLogDestination(neosmart::ostream &destination)
+	{
+		return AddLogDestination(destination, _logLevel);
+	}
+
 	void Logger::AddLogDestination(neosmart::ostream &destination, LogLevel level)
 	{
 		_consoleOnly = false;

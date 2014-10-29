@@ -52,6 +52,7 @@ namespace neosmart
 		Logger(LogLevel logLevel = neosmart::Warn);
 
 		void SetLogLevel(LogLevel level);
+		void AddLogDestination(ostream &output);
 		void AddLogDestination(ostream &output, LogLevel level);
 		void ClearLogDestinations();
 
