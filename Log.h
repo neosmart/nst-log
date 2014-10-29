@@ -35,7 +35,8 @@ namespace neosmart
 		Debug,
 		Info,
 		Warn,
-		Error
+		Error,
+		None
 	};
 
 	class Logger
