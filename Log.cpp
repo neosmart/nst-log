@@ -5,6 +5,7 @@
  * This code is released under the terms of the MIT License
 */
 
+#include <assert.h>
 #ifdef WIN32
 #include <atlstr.h>
 #else
@@ -28,7 +29,7 @@ namespace neosmart
 
 	Logger logger = Logger();
 
-	LPCTSTR logLevelNames[] = {_T("DEBG"), _T("INFO"), _T("WARN"), _T("ERRR")};
+	static LPCTSTR logPrefixes[] = {_T("DEBG: "), _T("INFO: "), _T("WARN: "), _T("ERRR: "), _T("")};
 
 	Logger::Logger(LogLevel logLevel)
 	{
@@ -39,12 +40,14 @@ namespace neosmart
 		_defaultLog = &std::cout;
 #endif
 		AddLogDestination(*_defaultLog, logLevel);
-		_consoleOnly = true;
 	}
 
 	void Logger::InnerLog(LogLevel level, LPCTSTR message, va_list params)
 	{
 		TCHAR *mask;
+
+		//As an optimization, we're not going to check level so don't pass in None!
+		assert(level != None);
 
 		//Indentation only works if ScopeLog is printing 
 		size_t size = 4 + 2 + _tcsclen(message) + 2 + 1;
@@ -52,43 +55,40 @@ namespace neosmart
 		{
 			size += (size_t) IndentLevel;
 			mask = new TCHAR[size];
-			_stprintf_s(mask, size, _T("%*s: %s\r\n"), IndentLevel + 4, logLevelNames[level], message);
+			_stprintf_s(mask, size, _T("%*s%s\r\n"), IndentLevel + 4, logPrefixes[level], message);
 		}
 		else
 		{
 			mask = new TCHAR[size];
-			_stprintf_s(mask, size, _T("%s: %s\r\n"), logLevelNames[level], message);
+			_stprintf_s(mask, size, _T("%s%s\r\n"), logPrefixes[level], message);
 		}
 
-		if(_consoleOnly)
-		{
-			vwprintf_s(mask, params);
-		}
-		else
-		{
 #ifdef WIN32
-			size_t length = _vsntprintf(NULL, 0, mask, params);
+		size_t length = _vsntprintf(NULL, 0, mask, params);
 #else
-			//See http://stackoverflow.com/questions/8047362/is-gcc-mishandling-a-pointer-to-a-va-list-passed-to-a-function
-			va_list args_copy;
-			va_copy(args_copy, params);
-			size_t length = _vsntprintf(NULL, 0, mask, args_copy);
-			va_end(args_copy);
+		//See http://stackoverflow.com/questions/8047362/is-gcc-mishandling-a-pointer-to-a-va-list-passed-to-a-function
+		va_list args_copy;
+		va_copy(args_copy, params);
+		size_t length = _vsntprintf(NULL, 0, mask, args_copy);
+		va_end(args_copy);
 #endif
-			TCHAR *final = new TCHAR [length + 1];
-			_vsntprintf(final, length + 1, mask, params);
+		TCHAR *final = new TCHAR [length + 1];
+		_vsntprintf(final, length + 1, mask, params);
 
-			for(map<ostream*, LogLevel>::iterator i = _outputs.begin(); i != _outputs.end(); ++i)
-			{
-				if(level < i->second)
-					continue;
-				(*i->first) << final;
-			}
+		Broadcast(level, final);
 
-			delete [] final;
-		}
-
+		delete [] final;
 		delete [] mask;
+	}
+
+	void Logger::Broadcast(LogLevel level, LPCTSTR message)
+	{
+		for(map<ostream*, LogLevel>::iterator i = _outputs.begin(); i != _outputs.end(); ++i)
+		{
+			if(level < i->second)
+				continue;
+			(*i->first) << message;
+		}
 	}
 
 	void Logger::Log(LogLevel level, LPCTSTR message, ...)
@@ -139,6 +139,14 @@ namespace neosmart
 		va_end(va_args);
 	}
 
+	void Logger::Passthru(LPCTSTR message, ...)
+	{
+		va_list va_args;
+		va_start(va_args, message);
+		InnerLog(neosmart::Passthru, message, va_args);
+		va_end(va_args);
+	}
+
 	void Logger::SetLogLevel(LogLevel logLevel)
 	{
 		_outputs[_defaultLog] = logLevel;
@@ -152,13 +160,11 @@ namespace neosmart
 
 	void Logger::AddLogDestination(neosmart::ostream &destination, LogLevel level)
 	{
-		_consoleOnly = false;
 		_outputs[&destination] = level;
 	}
 
 	void Logger::ClearLogDestinations()
 	{
-		_consoleOnly = false;
 		_outputs.clear();
 	}
 

@@ -36,6 +36,7 @@ namespace neosmart
 		Info,
 		Warn,
 		Error,
+		Passthru,
 		None
 	};
 
@@ -45,9 +46,9 @@ namespace neosmart
 		LogLevel _logLevel;
 		std::map<ostream*, LogLevel> _outputs;
 		ostream *_defaultLog;
-		bool _consoleOnly;
 
 		void InnerLog(LogLevel level, LPCTSTR message, va_list params);
+		void Broadcast(LogLevel level, LPCTSTR message);
 
 	public:
 		Logger(LogLevel logLevel = neosmart::Warn);
@@ -65,6 +66,7 @@ namespace neosmart
 		void Info(LPCTSTR message, ...);
 		void Warn(LPCTSTR message, ...);
 		void Error(LPCTSTR message, ...);
+		void Passthru(LPCTSTR message, ...);
 	};
 
 	class ScopeLog
