@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <vector>
+#include <map>
 #include <iostream>
 
 #ifdef _WIN32
@@ -42,7 +42,8 @@ namespace neosmart
 	{
 	private:
 		LogLevel _logLevel;
-		std::vector<ostream*> _outputs;
+		std::map<ostream*, LogLevel> _outputs;
+		ostream *_defaultLog;
 		bool _consoleOnly;
 
 		void InnerLog(LogLevel level, LPCTSTR message, va_list params);
@@ -51,7 +52,7 @@ namespace neosmart
 		Logger(LogLevel logLevel = neosmart::Warn);
 
 		void SetLogLevel(LogLevel level);
-		void AddLogDestination(ostream &output);
+		void AddLogDestination(ostream &output, LogLevel level);
 		void ClearLogDestinations();
 
 		void Log(LogLevel level, LPCTSTR message, ...);

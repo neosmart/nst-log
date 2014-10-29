@@ -34,18 +34,16 @@ namespace neosmart
 	{
 		_logLevel = logLevel;
 #ifdef WIN32
-		AddLogDestination(std::wcout);
+		_defaultLog = &std::wcout;
 #else
-		AddLogDestination(std::cout);
+		_defaultLog = &std::cout;
 #endif
+		AddLogDestination(*_defaultLog, logLevel);
 		_consoleOnly = true;
 	}
 
 	void Logger::InnerLog(LogLevel level, LPCTSTR message, va_list params)
 	{
-		if(level < _logLevel)
-			return;
-
 		TCHAR *mask;
 
 		//Indentation only works if ScopeLog is printing 
@@ -80,9 +78,11 @@ namespace neosmart
 			TCHAR *final = new TCHAR [length + 1];
 			_vsntprintf(final, length + 1, mask, params);
 
-			for(vector<ostream*>::iterator i = _outputs.begin(); i != _outputs.end(); ++i)
+			for(map<ostream*, LogLevel>::iterator i = _outputs.begin(); i != _outputs.end(); ++i)
 			{
-				(**i) << final;
+				if(level < i->second)
+					continue;
+				(*i->first) << final;
 			}
 
 			delete [] final;
@@ -141,13 +141,14 @@ namespace neosmart
 
 	void Logger::SetLogLevel(LogLevel logLevel)
 	{
+		_outputs[_defaultLog] = logLevel;
 		_logLevel = logLevel;
 	}
 
-	void Logger::AddLogDestination(neosmart::ostream &destination)
+	void Logger::AddLogDestination(neosmart::ostream &destination, LogLevel level)
 	{
 		_consoleOnly = false;
-		_outputs.push_back(&destination);
+		_outputs[&destination] = level;
 	}
 
 	void Logger::ClearLogDestinations()
