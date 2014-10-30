@@ -20,6 +20,15 @@ typedef char TCHAR;
 typedef const char *LPCTSTR;
 #endif
 
+/* Notes on synchronization
+ * C++11 changes the behavior of cout and cerr, in particular:
+	* cerr is tied to cout, meaning cout will be flushed on calls to cerr
+	* cerr is now sync'd by default (ios_base::sync_with_stdio)
+ * By default, cerr is unbuffered. Call std::cout.setf(std::ios::unitbuf)
+ * to fully-synchronize your cout writes to your cerr writes, if they are 
+ * both log outputs.
+*/
+
 namespace neosmart
 {
 #ifdef _WIN32
@@ -59,9 +68,9 @@ namespace neosmart
 		void ClearLogDestinations();
 
 		void Log(LogLevel level, LPCTSTR message, ...);
-		void Log(LPCTSTR message, ...);
 
 		//Convenience Functions
+		void Log(LPCTSTR message, ...);
 		void Debug(LPCTSTR message, ...);
 		void Info(LPCTSTR message, ...);
 		void Warn(LPCTSTR message, ...);

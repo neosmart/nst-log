@@ -27,7 +27,7 @@ namespace neosmart
 {
 	__thread int IndentLevel = -1;
 
-	Logger logger = Logger();
+	Logger logger;
 
 	static LPCTSTR logPrefixes[] = {_T("DEBG: "), _T("INFO: "), _T("WARN: "), _T("ERRR: "), _T("")};
 
@@ -47,7 +47,7 @@ namespace neosmart
 		TCHAR *mask;
 
 		//As an optimization, we're not going to check level so don't pass in None!
-		assert(level != None);
+		assert(level >= Debug && level <= Passthru);
 
 		//Indentation only works if ScopeLog is printing 
 		size_t size = 4 + 2 + _tcsclen(message) + 2 + 1;
