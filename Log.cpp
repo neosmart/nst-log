@@ -149,7 +149,9 @@ namespace neosmart
 
 	void Logger::SetLogLevel(LogLevel logLevel)
 	{
-		_outputs[_defaultLog] = logLevel;
+		const auto &defaultLogPair = _outputs.find(_defaultLog);
+		if (defaultLogPair != _outputs.end())
+			defaultLogPair->second = logLevel;
 		_logLevel = logLevel;
 	}
 
