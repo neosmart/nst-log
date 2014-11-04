@@ -47,7 +47,7 @@ namespace neosmart
 		TCHAR *mask;
 
 		//As an optimization, we're not going to check level so don't pass in None!
-		assert(level >= Debug && level <= Passthru);
+		assert(level >= LogLevel::Debug && level <= LogLevel::Passthru);
 
 		//Indentation only works if ScopeLog is printing 
 		size_t size = 4 + 2 + _tcsclen(message) + 2 + 1;
