@@ -7,7 +7,7 @@
 
 #include <assert.h>
 #ifdef WIN32
-#include <atlstr.h>
+#include <tchar.h>
 #else
 #include <stdio.h>
 #include <stdlib.h>
@@ -179,16 +179,20 @@ namespace neosmart
 
 	ScopeLog::ScopeLog(LPCTSTR name)
 	{
-		_allocated = false;
 		Initialize(name);
 	}
 
 #ifdef _WIN32
+	void ScopeLog::Initialize(LPCSTR name)
+	{
+		_name = (LPCTSTR) name;
+		++IndentLevel;
+		logger.Log(Debug, _T("Entering %S"), _name);
+	}
+
 	ScopeLog::ScopeLog(LPCSTR name)
 	{
-		_allocated = true;
-		LPCTSTR newName = _tcsdup(CString(name));
-		Initialize(newName);
+		Initialize(name);
 	}
 #endif
 
@@ -196,8 +200,5 @@ namespace neosmart
 	{
 		logger.Log(Debug, _T("Leaving %s"), _name);
 		--IndentLevel;
-
-		if(_allocated)
-			free((void*) _name);
 	}
 }

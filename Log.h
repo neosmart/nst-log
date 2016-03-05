@@ -81,9 +81,11 @@ namespace neosmart
 	class ScopeLog
 	{
 		LPCTSTR _name;
-		bool _allocated;
 
 		void Initialize(LPCTSTR name);
+#ifdef _WIN32
+		void Initialize(LPCSTR name);
+#endif
 
 	public:
 		ScopeLog(LPCTSTR name);
