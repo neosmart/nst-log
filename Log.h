@@ -31,7 +31,7 @@ typedef const char *LPCTSTR;
 
 namespace neosmart
 {
-#ifdef _WIN32
+#if defined(_WIN32) && defined(UNICODE)
 	typedef std::wostream ostream;
 #else
 	typedef std::ostream ostream;
@@ -83,13 +83,13 @@ namespace neosmart
 		LPCTSTR _name;
 
 		void Initialize(LPCTSTR name);
-#ifdef _WIN32
+#if defined(_WIN32) && defined(UNICODE)
 		void Initialize(LPCSTR name);
 #endif
 
 	public:
 		ScopeLog(LPCTSTR name);
-#ifdef _WIN32
+#if defined(_WIN32) && defined(UNICODE)
 		ScopeLog(LPCSTR name);
 #endif
 

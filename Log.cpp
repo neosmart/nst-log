@@ -6,7 +6,7 @@
 */
 
 #include <assert.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <tchar.h>
 #else
 #include <stdio.h>
@@ -34,7 +34,7 @@ namespace neosmart
 	Logger::Logger(LogLevel logLevel)
 	{
 		_logLevel = logLevel;
-#ifdef WIN32
+#if defined(_WIN32) && defined(UNICODE)
 		_defaultLog = &std::wcout;
 #else
 		_defaultLog = &std::cout;
@@ -64,7 +64,10 @@ namespace neosmart
 		}
 
 #ifdef WIN32
-		size_t length = _vsntprintf(NULL, 0, mask, params);
+#define old_vsntprintf vsntprintf
+#undef _vsntprintf
+#define _vsntprintf(w, x, y, z) _vsntprintf_s(w, static_cast<size_t>(x), static_cast<size_t>((x - 1)), y, z)
+		size_t length = _vscprintf(mask, params);
 #else
 		//See http://stackoverflow.com/questions/8047362/is-gcc-mishandling-a-pointer-to-a-va-list-passed-to-a-function
 		va_list args_copy;
@@ -74,6 +77,11 @@ namespace neosmart
 #endif
 		TCHAR *final = new TCHAR [length + 1];
 		_vsntprintf(final, length + 1, mask, params);
+#ifdef WIN32
+#undef _vsntprintf
+#define _vsntprintf old_vsntprintf
+#undef old_vsntprintf
+#endif
 
 		Broadcast(level, final);
 
@@ -182,7 +190,7 @@ namespace neosmart
 		Initialize(name);
 	}
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(UNICODE)
 	void ScopeLog::Initialize(LPCSTR name)
 	{
 		_name = (LPCTSTR) name;
