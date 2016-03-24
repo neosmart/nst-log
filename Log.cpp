@@ -64,9 +64,6 @@ namespace neosmart
 		}
 
 #ifdef WIN32
-#define old_vsntprintf vsntprintf
-#undef _vsntprintf
-#define _vsntprintf(w, x, y, z) _vsntprintf_s(w, static_cast<size_t>(x), static_cast<size_t>((x - 1)), y, z)
 		size_t length = _vscprintf(mask, params);
 #else
 		//See http://stackoverflow.com/questions/8047362/is-gcc-mishandling-a-pointer-to-a-va-list-passed-to-a-function
@@ -76,6 +73,11 @@ namespace neosmart
 		va_end(args_copy);
 #endif
 		TCHAR *final = new TCHAR [length + 1];
+#ifdef WIN32
+#define old_vsntprintf vsntprintf
+#undef _vsntprintf
+#define _vsntprintf(w, x, y, z) _vsntprintf_s(w, static_cast<size_t>(x), static_cast<size_t>((x - 1)), y, z)
+#endif
 		_vsntprintf(final, length + 1, mask, params);
 #ifdef WIN32
 #undef _vsntprintf
