@@ -7,18 +7,35 @@
 
 #pragma once
 
-#include <map>
-#include <iostream>
-
 #ifdef _WIN32
-#include <Windows.h>
+#define _CRT_SECURE_NO_WARNINGS
+#include <tchar.h>
+#include "Windows.h"
 #define __thread __declspec(thread)
 #else
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <string>
+#define _tcsclen strlen
+#define _stprintf_s snprintf
+#define vwprintf_s vprintf
+#define _vsntprintf vsnprintf 
 typedef char TCHAR;
 #include <stdarg.h>
 #define _T(x) (x)
 typedef const char *LPCTSTR;
 #endif
+
+#include <map>
+#include <iostream>
+#ifndef TINYFORMAT_USE_VARIADIC_TEMPLATES
+#define UNDEF_TINYFORMAT_USE_VARIADIC_TEMPLATES
+#define TINYFORMAT_ALLOW_WCHAR_STRINGS
+#define TINYFORMAT_USE_VARIADIC_TEMPLATES
+#endif
+#include "tinyformat.h"
+#include <cassert>
 
 /* Notes on synchronization
  * C++11 changes the behavior of cout and cerr, in particular:
@@ -38,6 +55,7 @@ namespace neosmart
 #endif
 
 	extern __thread int IndentLevel;
+	static LPCTSTR logPrefixes[] = { _T("DEBG: "), _T("INFO: "), _T("WARN: "), _T("ERRR: "), _T("") };
 
 	enum LogLevel
 	{
@@ -57,7 +75,33 @@ namespace neosmart
 		ostream *_defaultLog;
 
 		template<typename... Args>
-		void InnerLog(LogLevel level, LPCTSTR message, const Args&... args);
+		inline void InnerLog(LogLevel level, LPCTSTR message, const Args&... args)
+		{
+			TCHAR *mask;
+
+			//As an optimization, we're not going to check level so don't pass in None!
+			assert(level >= LogLevel::Debug && level <= LogLevel::Passthru);
+
+			//Indentation only works if ScopeLog is printing 
+			size_t size = 4 + 2 + _tcsclen(message) + 2 + 1;
+			if (IndentLevel >= 0 && _logLevel <= neosmart::Debug)
+			{
+				size += (size_t)IndentLevel;
+				mask = new TCHAR[size];
+				_stprintf_s(mask, size, _T("%*s%s\r\n"), IndentLevel + 4, logPrefixes[level], message);
+			}
+			else
+			{
+				mask = new TCHAR[size];
+				_stprintf_s(mask, size, _T("%s%s\r\n"), logPrefixes[level], message);
+			}
+
+			std::string final = tfm::format(mask, args...);
+
+			Broadcast(level, final.c_str());
+			delete[] mask;
+		}
+
 		void Broadcast(LogLevel level, LPCTSTR message);
 
 	public:
@@ -68,15 +112,48 @@ namespace neosmart
 		void AddLogDestination(ostream &output, LogLevel level);
 		void ClearLogDestinations();
 
-		void Log(LogLevel level, LPCTSTR message, ...);
+		template<typename... Args>
+		inline void Log(LogLevel level, LPCTSTR message, const Args&... args)
+		{
+			InnerLog(level, message, args...);
+		}
 
 		//Convenience Functions
-		void Log(LPCTSTR message, ...);
-		void Debug(LPCTSTR message, ...);
-		void Info(LPCTSTR message, ...);
-		void Warn(LPCTSTR message, ...);
-		void Error(LPCTSTR message, ...);
-		void Passthru(LPCTSTR message, ...);
+		template<typename... Args>
+		inline void Log(LPCTSTR message, const Args&... args)
+		{
+			InnerLog(neosmart::Info, message, args...);
+		}
+
+		template<typename... Args>
+		inline void Debug(LPCTSTR message, const Args&... args)
+		{
+			InnerLog(neosmart::Debug, message, args...);
+		}
+
+		template<typename... Args>
+		inline void Info(LPCTSTR message, const Args&... args)
+		{
+			InnerLog(neosmart::Info, message, args...);
+		}
+
+		template<typename... Args>
+		inline void Warn(LPCTSTR message, const Args&... args)
+		{
+			InnerLog(neosmart::Warn, message, args...);
+		}
+
+		template<typename... Args>
+		inline void Error(LPCTSTR message, const Args&... args)
+		{
+			InnerLog(neosmart::Error, message, args...);
+		}
+
+		template<typename... Args>
+		inline void Passthru(LPCTSTR message, const Args&... args)
+		{
+			InnerLog(neosmart::Passthru, message, args...);
+		}
 	};
 
 	class ScopeLog
@@ -98,3 +175,7 @@ namespace neosmart
 
 	extern Logger logger;
 }
+
+#ifdef UNDEF_TINYFORMAT_USE_VARIADIC_TEMPLATES
+#undef TINYFORMAT_USE_VARIADIC_TEMPLATES
+#endif

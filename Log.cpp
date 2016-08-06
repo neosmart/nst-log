@@ -5,22 +5,6 @@
  * This code is released under the terms of the MIT License
 */
 
-#include <assert.h>
-#include "tinyformat.h"
-#ifdef _WIN32
-#define _CRT_SECURE_NO_WARNINGS
-#include <tchar.h>
-#else
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <string>
-#define _tcsclen strlen
-#define _stprintf_s snprintf
-#define vwprintf_s vprintf
-#define _vsntprintf vsnprintf 
-#endif
-
 #include "Log.h"
 
 using namespace neosmart;
@@ -31,8 +15,6 @@ namespace neosmart
 	__thread int IndentLevel = -1;
 
 	Logger logger;
-
-	static LPCTSTR logPrefixes[] = {_T("DEBG: "), _T("INFO: "), _T("WARN: "), _T("ERRR: "), _T("")};
 
 	Logger::Logger(LogLevel logLevel)
 	{
@@ -45,34 +27,6 @@ namespace neosmart
 		AddLogDestination(*_defaultLog, logLevel);
 	}
 
-	template<typename... Args>
-	void Logger::InnerLog(LogLevel level, LPCTSTR message, const Args&... args)
-	{
-		TCHAR *mask;
-
-		//As an optimization, we're not going to check level so don't pass in None!
-		assert(level >= LogLevel::Debug && level <= LogLevel::Passthru);
-
-		//Indentation only works if ScopeLog is printing 
-		size_t size = 4 + 2 + _tcsclen(message) + 2 + 1;
-		if(IndentLevel >= 0 && _logLevel <= neosmart::Debug)
-		{
-			size += (size_t) IndentLevel;
-			mask = new TCHAR[size];
-			_stprintf_s(mask, size, _T("%*s%s\r\n"), IndentLevel + 4, logPrefixes[level], message);
-		}
-		else
-		{
-			mask = new TCHAR[size];
-			_stprintf_s(mask, size, _T("%s%s\r\n"), logPrefixes[level], message);
-		}
-
-		std::string final = tfm::format(mask, args...);
-
-		Broadcast(level, final.c_str());
-		delete [] mask;
-	}
-
 	void Logger::Broadcast(LogLevel level, LPCTSTR message)
 	{
 		for(map<ostream*, LogLevel>::iterator i = _outputs.begin(); i != _outputs.end(); ++i)
@@ -81,62 +35,6 @@ namespace neosmart
 				continue;
 			(*i->first) << message;
 		}
-	}
-
-	void Logger::Log(LogLevel level, LPCTSTR message, ...)
-	{
-		va_list va_args;
-		va_start(va_args, message);
-		InnerLog(level, message, va_args);
-		va_end(va_args);
-	}
-
-	void Logger::Log(LPCTSTR message, ...)
-	{
-		va_list va_args;
-		va_start(va_args, message);
-		InnerLog(neosmart::Info, message, va_args);
-		va_end(va_args);
-	}
-
-	void Logger::Debug(LPCTSTR message, ...)
-	{
-		va_list va_args;
-		va_start(va_args, message);
-		InnerLog(neosmart::Debug, message, va_args);
-		va_end(va_args);
-	}
-
-	void Logger::Info(LPCTSTR message, ...)
-	{
-		va_list va_args;
-		va_start(va_args, message);
-		InnerLog(neosmart::Info, message, va_args);
-		va_end(va_args);
-	}
-
-	void Logger::Warn(LPCTSTR message, ...)
-	{
-		va_list va_args;
-		va_start(va_args, message);
-		InnerLog(neosmart::Warn, message, va_args);
-		va_end(va_args);
-	}
-
-	void Logger::Error(LPCTSTR message, ...)
-	{
-		va_list va_args;
-		va_start(va_args, message);
-		InnerLog(neosmart::Error, message, va_args);
-		va_end(va_args);
-	}
-
-	void Logger::Passthru(LPCTSTR message, ...)
-	{
-		va_list va_args;
-		va_start(va_args, message);
-		InnerLog(neosmart::Passthru, message, va_args);
-		va_end(va_args);
 	}
 
 	void Logger::SetLogLevel(LogLevel logLevel)
