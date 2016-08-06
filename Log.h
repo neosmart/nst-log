@@ -92,7 +92,6 @@ namespace neosmart
 #if defined(_WIN32) && defined(UNICODE)
 		ScopeLog(LPCSTR name);
 #endif
-
 		~ScopeLog();
 	};
 

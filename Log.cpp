@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #ifdef _WIN32
+#define _CRT_SECURE_NO_WARNINGS
 #include <tchar.h>
 #else
 #include <stdio.h>
@@ -64,7 +65,7 @@ namespace neosmart
 		}
 
 #ifdef WIN32
-		size_t length = _vscprintf(mask, params);
+			vwprintf_s(mask, params);
 #else
 		//See http://stackoverflow.com/questions/8047362/is-gcc-mishandling-a-pointer-to-a-va-list-passed-to-a-function
 		va_list args_copy;
