@@ -7,7 +7,8 @@
 
 #pragma once
 
-#ifdef WIN32
+#ifdef _WIN32
+#define _CRT_SECURE_NO_WARNINGS
 #include <atlstr.h>
 #else
 #include <stdio.h>
@@ -65,7 +66,7 @@ namespace neosmart
 
 		if(_consoleOnly)
 		{
-			vwprintf_s(mask, params);
+			vwprintf_s((const wchar_t *)mask, params);
 		}
 		else
 		{
@@ -156,13 +157,14 @@ namespace neosmart
 		logger.Log(Debug, _T("Entering %s"), _name);
 	}
 
+#ifndef _WIN32
 	ScopeLog::ScopeLog(LPCTSTR name)
 	{
 		_allocated = false;
 		Initialize(name);
 	}
 
-#ifdef _WIN32
+#else
 	ScopeLog::ScopeLog(LPCSTR name)
 	{
 		_allocated = true;

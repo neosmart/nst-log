@@ -72,11 +72,11 @@ namespace neosmart
 		void Initialize(LPCTSTR name);
 
 	public:
+#ifndef _WIN32
 		ScopeLog(LPCTSTR name);
-#ifdef _WIN32
+#else
 		ScopeLog(LPCSTR name);
 #endif
-
 		~ScopeLog();
 	};
 
