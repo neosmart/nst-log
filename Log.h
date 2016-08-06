@@ -56,7 +56,8 @@ namespace neosmart
 		std::map<ostream*, LogLevel> _outputs;
 		ostream *_defaultLog;
 
-		void InnerLog(LogLevel level, LPCTSTR message, va_list params);
+		template<typename... Args>
+		void InnerLog(LogLevel level, LPCTSTR message, const Args&... args);
 		void Broadcast(LogLevel level, LPCTSTR message);
 
 	public:

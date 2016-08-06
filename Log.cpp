@@ -6,6 +6,7 @@
 */
 
 #include <assert.h>
+#include "tinyformat.h"
 #ifdef _WIN32
 #define _CRT_SECURE_NO_WARNINGS
 #include <tchar.h>
@@ -13,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 #define _tcsclen strlen
 #define _stprintf_s snprintf
 #define vwprintf_s vprintf
@@ -43,7 +45,8 @@ namespace neosmart
 		AddLogDestination(*_defaultLog, logLevel);
 	}
 
-	void Logger::InnerLog(LogLevel level, LPCTSTR message, va_list params)
+	template<typename... Args>
+	void Logger::InnerLog(LogLevel level, LPCTSTR message, const Args&... args)
 	{
 		TCHAR *mask;
 
@@ -64,31 +67,9 @@ namespace neosmart
 			_stprintf_s(mask, size, _T("%s%s\r\n"), logPrefixes[level], message);
 		}
 
-#ifdef WIN32
-			vwprintf_s(mask, params);
-#else
-		//See http://stackoverflow.com/questions/8047362/is-gcc-mishandling-a-pointer-to-a-va-list-passed-to-a-function
-		va_list args_copy;
-		va_copy(args_copy, params);
-		size_t length = _vsntprintf(NULL, 0, mask, args_copy);
-		va_end(args_copy);
-#endif
-		TCHAR *final = new TCHAR [length + 1];
-#ifdef WIN32
-#define old_vsntprintf vsntprintf
-#undef _vsntprintf
-#define _vsntprintf(w, x, y, z) _vsntprintf_s(w, static_cast<size_t>(x), static_cast<size_t>((x - 1)), y, z)
-#endif
-		_vsntprintf(final, length + 1, mask, params);
-#ifdef WIN32
-#undef _vsntprintf
-#define _vsntprintf old_vsntprintf
-#undef old_vsntprintf
-#endif
+		std::string final = tfm::format(mask, args...);
 
-		Broadcast(level, final);
-
-		delete [] final;
+		Broadcast(level, final.c_str());
 		delete [] mask;
 	}
 
