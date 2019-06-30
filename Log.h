@@ -105,6 +105,7 @@ namespace neosmart
 		void Broadcast(LogLevel level, LPCTSTR message);
 
 	public:
+		static Logger &GlobalLogger();
 		Logger(LogLevel logLevel = neosmart::Warn);
 
 		void SetLogLevel(LogLevel level);
@@ -173,8 +174,9 @@ namespace neosmart
 		~ScopeLog();
 	};
 
-	extern Logger logger;
+	inline Logger &logger = Logger::GlobalLogger();
 }
+
 
 #ifdef UNDEF_TINYFORMAT_USE_VARIADIC_TEMPLATES
 #undef TINYFORMAT_USE_VARIADIC_TEMPLATES

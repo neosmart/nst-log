@@ -14,15 +14,18 @@ namespace neosmart
 {
 	__thread int IndentLevel = -1;
 
-	Logger logger;
+	Logger &Logger::GlobalLogger() {
+		static Logger defaultLogger{LogLevel::Debug};
+		return defaultLogger;
+	}
 
 	Logger::Logger(LogLevel logLevel)
 	{
 		_logLevel = logLevel;
 #if defined(_WIN32) && defined(UNICODE)
-		_defaultLog = &std::wcout;
+		_defaultLog = &std::wcerr;
 #else
-		_defaultLog = &std::cout;
+		_defaultLog = &std::cerr;
 #endif
 		AddLogDestination(*_defaultLog, logLevel);
 	}
