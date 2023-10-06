@@ -14,9 +14,15 @@ namespace neosmart
 {
 	__thread int IndentLevel = -1;
 
-	Logger &Logger::GlobalLogger() {
+	static Logger &instance() {
 		static Logger defaultLogger{LogLevel::Debug};
 		return defaultLogger;
+	}
+
+	Logger &Logger::GlobalLogger() {
+		static std::once_flag flag;
+		std::call_once(flag, [] { instance(); });
+		return instance();
 	}
 
 	Logger::Logger(LogLevel logLevel)
